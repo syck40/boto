@@ -21,6 +21,28 @@ def main():
 
     vpc.attach_igw_to_vpc(vpc_id, igw_id)
 
+    public_subnet_cider = '10.0.1.0/24'
+    subnet_response = vpc.create_subnet(vpc_id, public_subnet_cider)
+    print('Subnet creating for VPC result ' + str(subnet_response))
+
+    public_route_table_response = vpc.create_public_route_table(vpc_id)
+    print('Route table creation result is ' + str(public_route_table_response))
+    rtb_id = public_route_table_response['RouteTable']['RouteTableId']
+
+    vpc.create_igw_to_public_route_table(rtb_id, igw_id)
+    public_subnet_id = subnet_response['Subnet']['SubnetId']
+
+    vpc.associate_subnet_with_route_table(public_subnet_id, rtb_id)
+
+    vpc.allow_auto_assign_ip_addr_for_subnet(public_subnet_id)
+
+    private_subnet_cider = '10.0.2.0/24'
+    private_subnet_resp = vpc.create_subnet(vpc_id, private_subnet_cider)
+    private_subnet_id = private_subnet_resp['Subnet']['SubnetId']
+
+    vpc.add_name_tag(public_subnet_id, 'Boto3-Public-Subnet')
+    vpc.add_name_tag(private_subnet_id, 'Boto3-Private-Subnet')
+
 
 if __name__ == "__main__":
     main()
